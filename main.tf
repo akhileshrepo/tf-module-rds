@@ -31,6 +31,7 @@ resource "aws_security_group" "main" {
 resource "aws_db_parameter_group" "main" {
   name   = "${local.name_prefix}-pg"
   family = var.engine_family
+  tags          = merge(local.tags, { Name = "${local.name_prefix}-pg" })
 }
 
 

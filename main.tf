@@ -49,3 +49,4 @@ resource "aws_rds_cluster" "main" {
   tags          = merge(local.tags, { Name = "${local.name_prefix}-cluster" })
   skip_final_snapshot             = var.skip_final_snapshot
 }
+

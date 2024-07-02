@@ -1,14 +1,14 @@
 resource "aws_db_subnet_group" "main" {
   name       = "${local.name_prefix}-subnet-group"
   subnet_ids = var.subnet_ids
-  tags = merge(local.tags, {Name = "${local.name_prefix}-subnet-group"})
+  tags = merge(local.tags, { Name = "${local.name_prefix}-subnet-group" })
 }
 
 resource "aws_security_group" "main" {
-  name          = "${local.name_prefix}-sg"
-  description   = "${local.name_prefix}-sg"
-  vpc_id        = var.vpc_id
-  tags          = merge(local.tags, { Name = "${local.name_prefix}-sg" })
+  name        = "${local.name_prefix}-sg"
+  description = "${local.name_prefix}-sg"
+  vpc_id      = var.vpc_id
+  tags        = merge(local.tags, { Name = "${local.name_prefix}-sg" })
 
   ingress {
     description = "RDS"
@@ -28,11 +28,9 @@ resource "aws_security_group" "main" {
 }
 
 resource "aws_db_parameter_group" "main" {
-  name   = "${local.name_prefix}-pg"
+  name   = "${local.name_prefix}-subnet-group"
   family = var.engine_family
-  tags          = merge(local.tags, { Name = "${local.name_prefix}-pg" })
 }
-
 
 resource "aws_rds_cluster" "main" {
   cluster_identifier      = "${local.name_prefix}-cluster"
@@ -44,20 +42,7 @@ resource "aws_rds_cluster" "main" {
   master_password         = data.aws_ssm_parameter.master_password.value
   backup_retention_period = var.backup_retention_period
   preferred_backup_window = var.preferred_backup_window
-  db_instance_parameter_group_name = aws_db_parameter_group.main.name
+  db_cluster_parameter_group_name = aws_db_parameter_group.main.name
   vpc_security_group_ids = [aws_security_group.main.id]
-  tags          = merge(local.tags, { Name = "${local.name_prefix}-cluster" })
-  skip_final_snapshot             = var.skip_final_snapshot
-  storage_encrypted = true
-  kms_key_id = var.kms_key_id
+  tags = merge(local.tags, { Name = "${local.name_prefix}-cluster" })
 }
-
-resource "aws_rds_cluster_instance" "cluster_instances" {
-  count              = var.instance_count
-  identifier         = "${local.name_prefix}-cluster-instance-${count.index+1}"
-  cluster_identifier = aws_rds_cluster.main.id
-  instance_class     = var.instance_class
-  engine             = aws_rds_cluster.main.engine
-  engine_version     = aws_rds_cluster.main.engine_version
-}
-
